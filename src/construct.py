@@ -108,10 +108,16 @@ background-color: white;
 .tone4 {color: blue;}
 .tone5 {color: gray;}
 
-"""
+.mobile .quizButton {
+    border-radius: 50%;
+    width: 3em;
+    height: 3em;
 
-# .card1 { background-color: #ffffff; }
-# .card2 { background-color: #FFFFFF; }
+    margin: 1em 0.5em;
+    font-family: "Sans Serif", sans-serif;
+    outline: none !important;
+}
+"""
 
 
 def construct_deck(config, notes):
@@ -207,6 +213,4 @@ def construct_deck(config, notes):
     # TODO: change dconf
     # TODO: give correct pinyin to cards with multiple readings (use previous pinyin)
     # TODO: pleco button
-    # TODO: make buttons beautiful
-    # TODO: fix ⏵
     pkg.write_to_file("/tmp/output.apkg")

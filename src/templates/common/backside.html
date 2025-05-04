@@ -3,6 +3,18 @@
     const charsTargetQuiz = document.getElementById(
       "characters-target-div-quiz",
     );
+
+    const openDicWordBtn = createButton("openDicWordBtn", "📘", () => {
+      if (mobilep) {
+        window.open("plecoapi://x-callback-url/df?hw={{Chinesisch}}");
+      } else {
+        window.open(
+          "https://www.mdbg.net/chinese/dictionary?page=worddict&wdqb={{Chinesisch}}",
+        );
+      }
+    });
+    charsTargetQuiz.appendChild(openDicWordBtn);
+
     let shownChars = {};
     const changeExSentenceDisplay = (c, val) => {
       shownChars[c] = val;
@@ -94,7 +106,7 @@
             removePaths();
             startQuiz();
           });
-          const animateAllBtn = createButton("animateAllBtn", "⏵", () => {
+          const animateAllBtn = createButton("animateAllBtn", "▶", () => {
             setQuizRunning(false);
             removePaths();
             writerQuiz.animateCharacter({
