@@ -4,7 +4,7 @@ from collections import OrderedDict
 import json
 import hashlib
 
-scriptDir = os.path.dirname(__file__)
+scriptDir = os.path.dirname(__file__) + "/../"
 
 
 def cacheDir(config):

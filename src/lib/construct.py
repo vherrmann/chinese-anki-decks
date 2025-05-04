@@ -8,9 +8,9 @@ import urllib.request
 import shutil
 import glob
 import json
-import common as cm
-from pinyin import cached_to_pinyin_gpt, to_pinyin_basic, color_pinyin
-from exampleSentences import createExampleSentences
+import lib.common as cm
+from lib.pinyin import cached_to_pinyin_gpt, to_pinyin_basic, color_pinyin
+from lib.exampleSentences import createExampleSentences
 
 
 def read_template(name):
@@ -212,5 +212,4 @@ def construct_deck(config, notes):
 
     # TODO: change dconf
     # TODO: give correct pinyin to cards with multiple readings (use previous pinyin)
-    # TODO: pleco button
     pkg.write_to_file("/tmp/output.apkg")

@@ -1,8 +1,8 @@
-import common as cm
+import lib.common as cm
 import re
-from pinyin import cached_to_pinyin_gpt
+from lib.pinyin import cached_to_pinyin_gpt
 import os
-from gpt import askGPT
+from lib.gpt import askGPT
 
 
 class BadResponse(Exception):

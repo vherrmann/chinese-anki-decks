@@ -1,7 +1,7 @@
-from construct import construct_deck
-from extract import extract_notes
 import os
 import re
+from lib.construct import construct_deck
+from lib.extract import extract_notes
 
 deckName = "Chinesisch einmal ganz anders 1 with Hanzi"
 
@@ -14,6 +14,7 @@ class Config:
         "modelName": deckName,
         "locale": "zh-TW",
         "meaningLanguage": "Deutsch",
+        "dataFile": "Chinesisch_einmal_ganz_anders_Band_1.apkg",
     }
     __setters = []
 
@@ -31,8 +32,7 @@ class Config:
 
 scriptDir = os.path.dirname(__file__)
 dataDir = scriptDir + "/../data/"
-dataName = "Chinesisch_einmal_ganz_anders_Band_1.apkg"
-rawNotes = extract_notes(dataDir + dataName)
+rawNotes = extract_notes(dataDir + Config.get("dataFile"))
 notes = []
 for rawNote in rawNotes:
     # clean html from pinyin

@@ -1,7 +1,7 @@
 from pypinyin.contrib.tone_sandhi import ToneSandhiMixin
 from pypinyin import pinyin
-from gpt import askGPT
-import common as cm
+from lib.gpt import askGPT
+import lib.common as cm
 
 
 # NOTE: This is not locale specific (does e.g. not respect taiwanes pronounciation of 星期)
