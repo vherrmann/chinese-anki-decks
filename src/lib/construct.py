@@ -11,6 +11,7 @@ import json
 import lib.common as cm
 from lib.pinyin import cached_to_pinyin_gpt, to_pinyin_basic, color_pinyin
 from lib.exampleSentences import createExampleSentences
+from lib.config import Config
 
 
 def read_template(name):
@@ -102,11 +103,19 @@ color: black;
 background-color: white;
 }
 
-.tone1 {color: red;}
-.tone2 {color: orange;}
-.tone3 {color: green;}
-.tone4 {color: blue;}
-.tone5 {color: gray;}
+# from https://github.com/jiru/ccc/blob/main/tmpl.css
+.tone-1 { color: #e30000; }
+.tone-2 { color: #02b31c; }
+.tone-3 { color: #1510f0; }
+.tone-4 { color: #8900bf; }
+.tone-5 { color: #777777; }
+
+.card.nightMode .tone { }
+.card.nightMode .tone-1 { color: #ff8080; }
+.card.nightMode .tone-2 { color: #80ff80; }
+.card.nightMode .tone-3 { color: #8080ff; }
+.card.nightMode .tone-4 { color: #df80ff; }
+.card.nightMode .tone-5 { color: #c6c6c6; }
 
 .mobile .quizButton {
     border-radius: 50%;
@@ -120,33 +129,33 @@ background-color: white;
 """
 
 
-def construct_deck(config, notes):
+def construct_deck(config: Config, notes):
     my_model = ga.Model(
         model_id=config.get("modelId"),
         name=config.get("modelName"),
         css=modelCSS,
         fields=[
-            {"name": "Chinesisch", "excludeFromSearch": False},
+            {"name": "Chinese", "excludeFromSearch": False},
             {"name": "Pinyin", "excludeFromSearch": False},
-            {"name": "Deutsch", "excludeFromSearch": False},
+            {"name": "Meaning", "excludeFromSearch": False},
             {"name": "Audio", "excludeFromSearch": True},
-            {"name": "Beispielsatz Chinesisch", "excludeFromSearch": True},
-            {"name": "Beispielsatz Übersetzung", "excludeFromSearch": True},
-            {"name": "Beispielsatz Pinyin", "excludeFromSearch": True},
+            {"name": "Example sentence chinese", "excludeFromSearch": True},
+            {"name": "Example sentence translation", "excludeFromSearch": True},
+            {"name": "Example sentence pinyin", "excludeFromSearch": True},
         ],
         templates=[
             {
-                "name": "Zh→De+Pin",
+                "name": "Zh→Mn+Pin",
                 "qfmt": get_template(1, True),
                 "afmt": get_template(1, False),
             },
             {
-                "name": "De→Pin+Zh",
+                "name": "Mn→Pin+Zh",
                 "qfmt": get_template(2, True),
                 "afmt": get_template(2, False),
             },
             {
-                "name": "Pin→Zh+De",
+                "name": "Pin→Zh+Mn",
                 "qfmt": get_template(3, True),
                 "afmt": get_template(3, False),
             },
@@ -171,16 +180,17 @@ def construct_deck(config, notes):
             to_pinyin_basic(
                 # deckName=deckName,
                 # locale=locale,
-                hanzi=chinese,
+                chinese,
                 # meaning=meaning,
                 # previousPinyin=note["pinyin"],
             )
         )
 
-        audioRes = gen_sound(config=config, hanzi=note["chinese"])
-        media_files.append(audioRes["path"])
+        # FIXME:
+        # audioRes = gen_sound(config=config, hanzi=note["chinese"])
+        # media_files.append(audioRes["path"])
 
-        audio = f"[sound:{audioRes['name']}]"
+        audio = ""  # f"[sound:{audioRes['name']}]"
         exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
         translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
         exampleSentencePinyin = color_pinyin(
@@ -210,6 +220,4 @@ def construct_deck(config, notes):
     pkg.media_files = media_files
     add_hanzi_writer_data(config, pkg)
 
-    # TODO: change dconf
-    # TODO: give correct pinyin to cards with multiple readings (use previous pinyin)
     pkg.write_to_file("/tmp/output.apkg")

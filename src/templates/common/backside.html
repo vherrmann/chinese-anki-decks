@@ -6,10 +6,10 @@
 
     const openDicWordBtn = createButton("openDicWordBtn", "📘", () => {
       if (mobilep) {
-        window.open("plecoapi://x-callback-url/df?hw={{Chinesisch}}");
+        window.open("plecoapi://x-callback-url/df?hw={{Chinese}}");
       } else {
         window.open(
-          "https://www.mdbg.net/chinese/dictionary?page=worddict&wdqb={{Chinesisch}}",
+          "https://www.mdbg.net/chinese/dictionary?page=worddict&wdqb={{Chinese}}",
         );
       }
     });
@@ -24,7 +24,7 @@
         document.getElementById("beispiel").style.display = "block";
       }
     };
-    for (const c of "{{Chinesisch}}") {
+    for (const c of "{{Chinese}}") {
       const charTargetQuiz = document.createElement("div");
 
       const charTargetQuizCanvas = document.createElementNS(

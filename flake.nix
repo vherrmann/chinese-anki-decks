@@ -27,6 +27,7 @@
                 gtts
                 openai
                 mypy
+                zhon
               ]
             ))
           ];

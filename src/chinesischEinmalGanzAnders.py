@@ -1,42 +1,33 @@
 import os
-import re
 from lib.construct import construct_deck
-from lib.extract import extract_notes
+from lib.extract import extract_data
+from lib.config import Config
+import lib.common as cm
 
-deckName = "Chinesisch einmal ganz anders 1 with Hanzi"
+deckName = "Chinesisch einmal ganz anders 1 + ε"
 
+dataFile = "Chinesisch_einmal_ganz_anders_Band_1.apkg"
 
-class Config:
-    __conf = {
+config = Config(
+    {
         "modelId": 1437479615,
         "deckId": 1162970673,
         "deckName": deckName,
         "modelName": deckName,
         "locale": "zh-TW",
         "meaningLanguage": "Deutsch",
-        "dataFile": "Chinesisch_einmal_ganz_anders_Band_1.apkg",
     }
-    __setters = []
-
-    @staticmethod
-    def get(name):
-        return Config.__conf[name]
-
-    @staticmethod
-    def set(name, value):
-        if name in Config.__setters:
-            Config.__conf[name] = value
-        else:
-            raise NameError("Name not accepted in set() method")
+)
 
 
 scriptDir = os.path.dirname(__file__)
 dataDir = scriptDir + "/../data/"
-rawNotes = extract_notes(dataDir + Config.get("dataFile"))
+data = extract_data(pkgPath=dataDir + dataFile, collectionAnki21p=False)
+rawNotes = data["notes"]
 notes = []
 for rawNote in rawNotes:
     # clean html from pinyin
-    cleanedPinyin = re.sub(r"<.*?>", "", rawNote["flds"][2])
+    cleanedPinyin = cm.cleanHtml(rawNote["flds"][2])
     notes.append(
         {
             "guid": rawNote["guid"],
@@ -48,6 +39,6 @@ for rawNote in rawNotes:
         }
     )
 construct_deck(
-    config=Config,
+    config=config,
     notes=notes,
 )

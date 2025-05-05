@@ -2,19 +2,30 @@ from pypinyin.contrib.tone_sandhi import ToneSandhiMixin
 from pypinyin import pinyin
 from lib.gpt import askGPT
 import lib.common as cm
+import zhon
+import re
 
 
 # NOTE: This is not locale specific (does e.g. not respect taiwanes pronounciation of 星期)
-def to_pinyin_basic(hanzi):
+def to_pinyin_basic(str):
     tsm = ToneSandhiMixin()
-    # Generate pinyin
-    pin = pinyin(hanzi)
-    # Correct the pinyin for 不 and 一
-    # We don't change the tones for multiple third tones, since
-    # this this is quite hard (you need to chunk the words correctly)
-    # and also people do in fact say the third tones when speaking slowly.
-    pin_corrected = tsm._yi(hanzi, tsm._bu(hanzi, pin))
-    return " ".join(sum(pin_corrected, []))
+
+    # This function does not work well if there are non-hanzi characters in the input
+    def hanzi_to_pinyin(hanzi):
+        # Generate pinyin
+        pin = pinyin(hanzi)
+        # Correct the pinyin for 不 and 一
+        # We don't change the tones for multiple third tones, since
+        # this this is quite hard (you need to chunk the words correctly)
+        # and also people do in fact say the third tones when speaking slowly.
+        pin_corrected = tsm._yi(hanzi, tsm._bu(hanzi, pin))
+        return " ".join(sum(pin_corrected, []))
+
+    # This returns a list. For every non-hanzi characters there is an empty string
+    # Blocks of hanzi characters are contained as a chunk
+    regex = rf"[{zhon.hanzi.characters}]+"
+    res = re.sub(regex, lambda m: hanzi_to_pinyin(m.group(0)), str)
+    return res
 
 
 def to_pinyin_gpt(locale, hanzi, meaning=None, previousPinyin=None, check=True):

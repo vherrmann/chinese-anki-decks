@@ -1,6 +1,7 @@
 import tempfile
 import shutil
 import sqlite3
+import json
 
 
 def getDueForNote(nid, con):
@@ -15,11 +16,14 @@ def getDueForNote(nid, con):
     return due
 
 
-def extract_notes(pkgPath):
+def extract_data(pkgPath, collectionAnki21p):
     with tempfile.TemporaryDirectory() as tmpdirname:
         # list dir content
         shutil.unpack_archive(pkgPath, tmpdirname, format="zip")
-        database = f"{tmpdirname}/collection.anki2"
+        if collectionAnki21p:
+            database = f"{tmpdirname}/collection.anki21"
+        else:
+            database = f"{tmpdirname}/collection.anki2"
 
         con = sqlite3.connect(database)
         cur = con.cursor()
@@ -35,4 +39,9 @@ def extract_notes(pkgPath):
 
             # FIXME: split tags to list
             notes.append({"guid": guid, "due": due, "tags": tagList, "flds": fldsList})
-        return notes
+
+        prevDecksCol = cur.execute("SELECT decks FROM col").fetchone()[0]
+        prevDecksColList = list(json.loads(prevDecksCol).keys())
+        prevDecksColList.remove("1")
+        deckId = prevDecksColList[0]
+        return {"notes": notes, "deckId": deckId}

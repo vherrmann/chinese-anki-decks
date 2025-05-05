@@ -1,6 +1,6 @@
 import lib.common as cm
 import re
-from lib.pinyin import cached_to_pinyin_gpt
+from lib.pinyin import to_pinyin_basic
 import os
 from lib.gpt import askGPT
 
@@ -44,7 +44,7 @@ def createExampleSentences(config, notes):
         exSentCacheFile = cacheDir + f"example_sentence_{hashedKey}.json"
         return exSentCacheFile
 
-    def createExampleSentence(note):
+    def createExampleSentence(note, locale):
         hanzi = note["chinese"]
         meaning = note["meaning"]
         while True:
@@ -63,9 +63,10 @@ def createExampleSentences(config, notes):
             break
 
     def cached_createExampleSentence(note):
-        hashedKey = cm.hash([note["chinese"], note["meaning"]])
+        locale = config.get("locale")
+        hashedKey = cm.hash([note["chinese"], note["meaning"], locale])
         exSentCacheFile = cacheDir + f"example_sentence_{hashedKey}.json"
-        return cm.withCacheSetPath(exSentCacheFile)(createExampleSentence)(note)
+        return cm.withCacheSetPath(exSentCacheFile)(createExampleSentence)(note, locale)
 
     def translateSentence(meaningLanguage, sentence):
         msg = f"""Please translate the following sentence to {meaningLanguage}:
@@ -90,7 +91,8 @@ def createExampleSentences(config, notes):
     }
 
     pinyin = {
-        key: cached_to_pinyin_gpt(config, hanzi=sentence, check=False)
+        # TODO: use better pinyin translator
+        key: to_pinyin_basic(sentence)
         for key, sentence in exampleSentences.items()
     }
 

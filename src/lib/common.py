@@ -3,6 +3,7 @@ import os
 from collections import OrderedDict
 import json
 import hashlib
+import re
 
 scriptDir = os.path.dirname(__file__) + "/../"
 
@@ -64,3 +65,7 @@ def withCacheSetPath(path):
 
 def noteDictKey(note):
     return (note["chinese"], note["meaning"])
+
+
+def cleanHtml(str):
+    return re.sub(r"<.*?>", "", str)
