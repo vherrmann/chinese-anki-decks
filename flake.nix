@@ -16,11 +16,17 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        myPython = pkgs.python3.override {
+          self = myPython;
+          packageOverrides = pyfinal: pypref: {
+            pypinyin-dict = pyfinal.callPackage ./nix/pypinyin-dict.nix { };
+          };
+        };
       in
       {
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
-            (pkgs.python3.withPackages (
+            (myPython.withPackages (
               ps: with ps; [
                 genanki
                 pypinyin
@@ -28,8 +34,11 @@
                 openai
                 mypy
                 zhon
+                pypinyin-dict
               ]
             ))
+
+            opencc
           ];
         };
       }

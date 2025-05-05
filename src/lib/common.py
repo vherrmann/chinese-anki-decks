@@ -8,8 +8,12 @@ import re
 scriptDir = os.path.dirname(__file__) + "/../"
 
 
+def cacheDirWithName(name):
+    return f"{scriptDir}/../cache/{name}/"
+
+
 def cacheDir(config):
-    return f"{scriptDir}/../cache/{config.get('deckName')}"
+    return cacheDirWithName(config.get("deckName"))
 
 
 def fileEmptyP(path):

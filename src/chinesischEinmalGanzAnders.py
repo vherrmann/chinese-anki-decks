@@ -28,6 +28,14 @@ notes = []
 for rawNote in rawNotes:
     # clean html from pinyin
     cleanedPinyin = cm.cleanHtml(rawNote["flds"][2])
+    # fix common mistake in prev. deck
+    fixedPinyin = (
+        cleanedPinyin.replace("ǐu", "iǔ")
+        .replace("ìu", "iù")
+        .replace("íu", "iú")
+        .replace("ío", "ió")
+        .replace("īu", "iū")
+    )
     notes.append(
         {
             "guid": rawNote["guid"],
@@ -35,7 +43,7 @@ for rawNote in rawNotes:
             "tags": rawNote["tags"],
             "chinese": rawNote["flds"][0],
             "meaning": rawNote["flds"][1],
-            "pinyin": cleanedPinyin,
+            "pinyin": fixedPinyin,
         }
     )
 construct_deck(

@@ -9,7 +9,7 @@ import shutil
 import glob
 import json
 import lib.common as cm
-from lib.pinyin import cached_to_pinyin_gpt, to_pinyin_basic, color_pinyin
+from lib.pinyin import cached_to_pinyin_gpt, cached_to_pinyin_check, color_pinyin
 from lib.exampleSentences import createExampleSentences
 from lib.config import Config
 
@@ -177,12 +177,12 @@ def construct_deck(config: Config, notes):
         meaning = note["meaning"]
         # FIXME: use cached_to_pinyin_gpt
         pinyin = color_pinyin(
-            to_pinyin_basic(
-                # deckName=deckName,
-                # locale=locale,
-                chinese,
-                # meaning=meaning,
-                # previousPinyin=note["pinyin"],
+            cached_to_pinyin_gpt(
+                config=config,
+                hanzi=chinese,
+                meaning=meaning,
+                meaningLanguage=config.get("meaningLanguage"),
+                previousPinyin=note["pinyin"],
             )
         )
 
