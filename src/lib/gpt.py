@@ -24,28 +24,23 @@ def countTokens(func):
     return wrapper
 
 
-# @countTokens
-def askGPTJSON(msg, model=model, **kwargs):
+def askGPT(
+    msg, model=model, systemprompt="You are a skilled chinese teacher.", **kwargs
+):
     return client.chat.completions.create(
         model=model,
         messages=[
-            {
-                "role": "system",
-                "content": "You are a skilled chinese teacher, who only responds in machine-readable json without unnecessary characters like line breaks or whitespace.",
-            },
+            {"role": "system", "content": systemprompt},
             {"role": "user", "content": msg},
         ],
         **kwargs,
     )
 
 
-# @countTokens
-def askGPT(msg, model=model, **kwargs):
-    return client.chat.completions.create(
+def askGPTJSON(msg, model=model, **kwargs):
+    return askGPT(
+        msg,
         model=model,
-        messages=[
-            {"role": "system", "content": "You are a skilled chinese teacher."},
-            {"role": "user", "content": msg},
-        ],
+        systemprompt="You are a skilled chinese teacher, who only responds in machine-readable json without unnecessary characters like line breaks or whitespace.",
         **kwargs,
     )
