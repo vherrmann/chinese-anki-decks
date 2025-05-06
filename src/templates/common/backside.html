@@ -1,4 +1,13 @@
 <script>
+  function scrollDistanceToTopOfElement(elem) {
+    const viewportHeight = Math.max(
+      document.documentElement.clientHeight || 0,
+      window.innerHeight || 0,
+    );
+    const elemTop = elem.getBoundingClientRect().top;
+    return elemTop - viewportHeight;
+  }
+
   function initializeCharsTargetQuiz(showOutline) {
     const charsTargetQuiz = document.getElementById(
       "characters-target-div-quiz",
@@ -16,12 +25,20 @@
     charsTargetQuiz.appendChild(openDicWordBtn);
 
     let shownChars = {};
+    const beispielElement = document.getElementById("beispiel");
     const changeExSentenceDisplay = (c, val) => {
       shownChars[c] = val;
       if (!showOutline && Object.values(shownChars).includes(false)) {
-        document.getElementById("beispiel").style.display = "none";
+        beispielElement.style.display = "none";
       } else {
-        document.getElementById("beispiel").style.display = "block";
+        beispielElement.style.display = "block";
+        if (scrollDistanceToTopOfElement(beispielElement) < 10) {
+          // Scroll to the element if it is not fully visible
+          beispielElement.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }
       }
     };
     for (const c of "{{Chinese}}") {
