@@ -84,14 +84,18 @@ def add_hanzi_writer_data(config, pkg):
 
 
 class MyNote(ga.Note):
-    def __init__(self, deckId, guid, *args, **kwargs):
+    def __init__(self, deckId, guid, usePrevGUID, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.oldGuid = guid
         self.deckId = deckId
+        self.oldGuid = guid
+        self.usePrevGUID = usePrevGUID
 
     @property
     def guid(self):
-        return ga.guid_for(self.oldGuid + str(self.deckId))
+        if self.usePrevGUID:
+            return self.oldGuid
+        else:
+            return ga.guid_for(self.oldGuid + str(self.deckId))
 
 
 modelCSS = """
@@ -129,7 +133,9 @@ background-color: white;
 """
 
 
-def construct_deck(config: Config, notes):
+def construct_deck(config: Config, notes, mediaDir=None):
+    print("[Constructing deck]")
+    media_files = []
     my_model = ga.Model(
         model_id=config.get("modelId"),
         name=config.get("modelName"),
@@ -171,26 +177,34 @@ def construct_deck(config: Config, notes):
     # There are some duplicated entries in the notes, so we remove them
     # We use chinese + meaning for the key and not only chinese since
     # there are notes that have the same chinese but different meaning, e.g. 還
-    media_files = []
     for note in notes:
         chinese = note["chinese"]
         meaning = note["meaning"]
-        # FIXME: use cached_to_pinyin_gpt
-        pinyin = color_pinyin(
-            cached_to_pinyin_gpt(
-                config=config,
-                hanzi=chinese,
-                meaning=meaning,
-                meaningLanguage=config.get("meaningLanguage"),
-                previousPinyin=note["pinyin"],
+
+        if config.get("usePrevPinyin"):
+            pinyin = note["pinyin"]
+        else:
+            pinyin = color_pinyin(
+                cached_to_pinyin_gpt(
+                    config=config,
+                    hanzi=chinese,
+                    meaning=meaning,
+                    meaningLanguage=config.get("meaningLanguage"),
+                    previousPinyin=note["pinyin"],
+                )
             )
-        )
 
-        # FIXME:
-        # audioRes = gen_sound(config=config, hanzi=note["chinese"])
-        # media_files.append(audioRes["path"])
+        # Use audio of old deck if available
+        if note["audioFile"] != "":
+            if mediaDir is None:
+                raise ValueError("mediaDir is None, but audioFile is not empty")
+            media_files.append(f"{mediaDir}/{note['audioFile']}")
+            audio = f"[sound:{note['audioFile']}]"
+        else:
+            audioRes = gen_sound(config=config, hanzi=note["chinese"])
+            media_files.append(audioRes["path"])
+            audio = f"[sound:{audioRes['name']}]"
 
-        audio = ""  # f"[sound:{audioRes['name']}]"
         exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
         translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
         exampleSentencePinyin = color_pinyin(

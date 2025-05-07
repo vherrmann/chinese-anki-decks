@@ -16,7 +16,18 @@ def getDueForNote(nid, con):
     return due
 
 
-def extract_data(pkgPath, collectionAnki21p):
+def copyMediaFiles(tmpdirname, mediaDir):
+    print(f"[[Copying media files from {tmpdirname} to {mediaDir}]]")
+    with open(f"{tmpdirname}/media", encoding="UTF8", mode="r") as fp:
+        media = json.load(fp)
+    for i, name in media.items():
+        src = f"{tmpdirname}/{i}"
+        dst = f"{mediaDir}/{name}"
+        shutil.copy(src, dst)
+
+
+def extract_data(pkgPath, collectionAnki21p, mediaDir=None):
+    print(f"[Extracting data from {pkgPath}]")
     with tempfile.TemporaryDirectory() as tmpdirname:
         # list dir content
         shutil.unpack_archive(pkgPath, tmpdirname, format="zip")
@@ -40,8 +51,18 @@ def extract_data(pkgPath, collectionAnki21p):
             # FIXME: split tags to list
             notes.append({"guid": guid, "due": due, "tags": tagList, "flds": fldsList})
 
-        prevDecksCol = cur.execute("SELECT decks FROM col").fetchone()[0]
+        prevDecksCol, prevModelsCol = cur.execute(
+            "SELECT decks, models FROM col"
+        ).fetchone()
         prevDecksColList = list(json.loads(prevDecksCol).keys())
         prevDecksColList.remove("1")
-        deckId = prevDecksColList[0]
-        return {"notes": notes, "deckId": deckId}
+        assert len(prevDecksColList) == 1
+        deckId = int(prevDecksColList[0])
+
+        prevModelsColList = list(json.loads(prevModelsCol).keys())
+        assert len(prevModelsColList) == 1
+        modelId = int(prevModelsColList[0])
+
+        if mediaDir is not None:
+            copyMediaFiles(tmpdirname=tmpdirname, mediaDir=mediaDir)
+        return {"notes": notes, "deckId": deckId, "modelId": modelId}
