@@ -42,6 +42,7 @@ def getColInfo(con):
     ).fetchone()
     prevDecksColList = list(json.loads(prevDecksCol).keys())
     prevDecksColList.remove("1")
+    print(prevDecksColList)
     assert len(prevDecksColList) == 1
     deckId = int(prevDecksColList[0])
 
@@ -79,10 +80,7 @@ def extract_data(pkgPath, collectionAnki21p, mediaColl):
 
         fixDueForNotes(notes, con)
 
-        colInfo = getColInfo(con)
         addMediaFiles(tmpdirname=tmpdirname, mediaColl=mediaColl)
         return {
             "notes": notes,
-            "deckId": colInfo["deckId"],
-            "modelId": colInfo["modelId"],
         }

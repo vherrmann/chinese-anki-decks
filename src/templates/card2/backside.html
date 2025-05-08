@@ -6,14 +6,15 @@
   <br />
 
   <div>{{Audio}}</div>
-  <span id="pinyin"> {{Pinyin}}<br /></span>
+  <span id="pinyin">{{Pinyin}}</span>
+  <br />
 
   <div id="characters-target-div-quiz"></div>
   <div id="beispiel" style="display: none">
     <h3>Beispielsatz:</h3>
     {{Example sentence chinese}}
     <br />
-    <span id="exampleSentencePinyin"> {{Example sentence pinyin}} </span>
+    <span id="exampleSentencePinyin">{{Example sentence pinyin}}</span>
     <br />
     {{Example sentence translation}}
     <div />
@@ -21,4 +22,6 @@
 </div>
 <script>
   initializeCharsTargetQuiz("{{Chinese}}", false);
+  colorPinyinElement("{{Pinyin}}");
+  colorPinyinSentenceElement("{{Example sentence pinyin}}");
 </script>

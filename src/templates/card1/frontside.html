@@ -1,5 +1,7 @@
+<div class="termid" style="font-size: 8px; color: #8882">({{ID}})</div>
 <div id="characters-target-div" style="display: block"></div>
 
 <script>
-  initializeCharsTarget("{{Chinese}}");
+  var isBack = document.getElementById("back-indicator") !== null;
+  initializeCharsTarget("{{Chinese}}", "{{Pinyin}}", isBack);
 </script>

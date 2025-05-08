@@ -5,26 +5,12 @@ from pathlib import Path
 
 modelCSS = """
 .card {
-font-family: arial;
-font-size: 20px;
-text-align: center;
-color: black;
-background-color: white;
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
 }
-
-# from https://github.com/jiru/ccc/blob/main/tmpl.css
-.tone-1 { color: #e30000; }
-.tone-2 { color: #02b31c; }
-.tone-3 { color: #1510f0; }
-.tone-4 { color: #8900bf; }
-.tone-5 { color: #777777; }
-
-.card.nightMode .tone { }
-.card.nightMode .tone-1 { color: #ff8080; }
-.card.nightMode .tone-2 { color: #80ff80; }
-.card.nightMode .tone-3 { color: #8080ff; }
-.card.nightMode .tone-4 { color: #df80ff; }
-.card.nightMode .tone-5 { color: #c6c6c6; }
 
 .mobile .quizButton {
     border-radius: 50%;
@@ -47,7 +33,11 @@ def read_template(name):
 class TemplateGen:
     def __init__(self, config, mediaColl):
         deckName = config.get("deckName")
-        scriptPaths = ["config.js", "libs/hanzi-writer.js"]
+        scriptPaths = [
+            "config.js",
+            "libs/hanzi-writer.js",
+            "libs/separate-pinyin-in-syllables.js",
+        ]
         self.scriptNames = []
         for scriptPath in scriptPaths:
             absolutePath = f"{cm.scriptDir}/templates/common/{scriptPath}"

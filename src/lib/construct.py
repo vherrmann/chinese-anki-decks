@@ -85,7 +85,6 @@ class StandardNote(ga.Note):
 def construct_deck(config: Config, notes, mediaColl):
     print("[Constructing deck]")
     standard_model = generate_model(config, mediaColl)
-    # TODO: give hanzi writer unique names that includes deck name (since it is slightly changed from original)
 
     notes = cm.nodubBy(notes, lambda x: (x["chinese"], x["meaning"]))
 
@@ -105,14 +104,12 @@ def construct_deck(config: Config, notes, mediaColl):
         if config.get("usePrevPinyin"):
             pinyin = note["pinyin"]
         else:
-            pinyin = color_pinyin(
-                cached_to_pinyin_gpt(
-                    config=config,
-                    hanzi=chinese,
-                    meaning=meaning,
-                    meaningLanguage=config.get("meaningLanguage"),
-                    previousPinyin=note["pinyin"],
-                )
+            pinyin = cached_to_pinyin_gpt(
+                config=config,
+                hanzi=chinese,
+                meaning=meaning,
+                meaningLanguage=config.get("meaningLanguage"),
+                previousPinyin=note["pinyin"],
             )
 
         # Use audio of old deck if available
@@ -126,9 +123,7 @@ def construct_deck(config: Config, notes, mediaColl):
 
         exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
         translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
-        exampleSentencePinyin = color_pinyin(
-            exSentences["pinyin"][cm.noteDictKey(note)]
-        )
+        exampleSentencePinyin = exSentences["pinyin"][cm.noteDictKey(note)]
 
         my_note = StandardNote(
             deckId=config.get("deckId"),

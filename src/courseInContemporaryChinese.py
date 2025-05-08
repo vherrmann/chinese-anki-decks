@@ -27,8 +27,8 @@ with MediaCollector() as mediaColl:
     # otherwise importing the deck to update the old one won't work.
     config = Config(
         {
-            "modelId": data["modelId"],
-            "deckId": data["deckId"],
+            "modelId": 1085856635,
+            "deckId": 2068081752,
             "deckName": deckName,
             "modelName": deckName,
             "locale": "zh-TW",
