@@ -2,6 +2,7 @@ import os
 from lib.construct import construct_deck
 from lib.extract import extract_data
 from lib.config import Config
+from lib.mediaCollector import MediaCollector
 import lib.common as cm
 import tempfile
 import re
@@ -14,9 +15,9 @@ dataFile = "A_Course_in_Contemporary_Chinese__B1-B6_Traditional.apkg"
 scriptDir = os.path.dirname(__file__)
 dataDir = scriptDir + "/../data/"
 
-with tempfile.TemporaryDirectory() as mediaDir:
+with MediaCollector() as mediaColl:
     data = extract_data(
-        pkgPath=dataDir + dataFile, mediaDir=mediaDir, collectionAnki21p=True
+        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=True
     )
     notes = []
 
@@ -41,18 +42,17 @@ with tempfile.TemporaryDirectory() as mediaDir:
     for rawNote in rawNotes:
         # clean html from pinyin
         cleanedPinyin = cm.cleanHtml(rawNote["flds"][3])
-        # FIXME: allow additional fields, like POS
-        POS = rawNote["flds"][4]
+        # FIXME: allow additional fields
         audioFile = re.search(r"\[sound:(.+)\]", rawNote["flds"][6]).group(1)
         notes.append(
             {
+                "id": rawNote["flds"][0],
                 "guid": rawNote["guid"],
                 "due": rawNote["due"],
                 "tags": rawNote["tags"],
                 "chinese": rawNote["flds"][1],
-                "meaning": (
-                    f"({POS}) {rawNote["flds"][5]}" if POS != "" else rawNote["flds"][5]
-                ),
+                "meaning": rawNote["flds"][5],
+                "pos": rawNote["flds"][4],
                 "audioFile": audioFile,
                 "pinyin": cleanedPinyin,
             }
@@ -61,7 +61,7 @@ with tempfile.TemporaryDirectory() as mediaDir:
     construct_deck(
         config=config,
         notes=notes,
-        mediaDir=mediaDir,
+        mediaColl=mediaColl,
     )
 
     # TODO: the previous deck contains simplified chinese, POS (part of speech) and an ID field

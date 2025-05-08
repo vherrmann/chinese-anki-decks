@@ -1,4 +1,4 @@
-<span style=" Unicode MS; font-size: 26px; 07f">{{Pinyin}}</span>
+{{FrontSide}}
 <br />
 
 <div id="backside">
@@ -6,20 +6,19 @@
   <br />
 
   <div>{{Audio}}</div>
-  <span style="font-family: Gentium; font-size: 22px">{{Meaning}}</span>
+  <span>{{#POS}}({{POS}}){{/POS}} {{Meaning}}</span>
 
   <div id="characters-target-div-quiz"></div>
   <div id="beispiel" style="display: none">
     <h3>Beispielsatz:</h3>
     {{Example sentence chinese}}
     <br />
-    {{Example sentence pinyin}}
+    <span id="exampleSentencePinyin"> {{Example sentence pinyin}} </span>
     <br />
     {{Example sentence translation}}
     <div />
   </div>
-
-  <script>
-    initializeCharsTargetQuiz(false);
-  </script>
 </div>
+<script>
+  initializeCharsTargetQuiz("{{Chinese}}", false);
+</script>

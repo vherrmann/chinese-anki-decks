@@ -4,12 +4,14 @@ from collections import OrderedDict
 import json
 import hashlib
 import re
+import re
 
 scriptDir = os.path.dirname(__file__) + "/../"
 
 
 def cacheDirWithName(name):
-    return f"{scriptDir}/../cache/{name}/"
+    cleanedName = cleaned_filename(name)
+    return f"{scriptDir}/../cache/{cleanedName}/"
 
 
 def cacheDir(config):
@@ -71,5 +73,11 @@ def noteDictKey(note):
     return (note["chinese"], note["meaning"])
 
 
-def cleanHtml(str):
+def cleanHtml(str: str) -> str:
     return re.sub(r"<.*?>", "", str)
+
+
+def cleaned_filename(name: str) -> str:
+    safe_name = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", "", name)
+    name = re.sub(r"\s", "_", safe_name)
+    return name[:255]

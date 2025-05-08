@@ -12,33 +12,19 @@ import lib.common as cm
 from lib.pinyin import cached_to_pinyin_gpt, cached_to_pinyin_check, color_pinyin
 from lib.exampleSentences import createExampleSentences
 from lib.config import Config
-
-
-def read_template(name):
-    with open(f"{cm.scriptDir}/templates/{name}", "r") as file:
-        content = file.read()
-    return content
-
-
-def get_template(cardn, frontsidep):
-    cm_config = read_template("common/config.html")
-    cm_hanzi_writer = read_template("common/libs/hanzi-writer.html")
-    cm_common = read_template("common/common.html")
-    side = "frontside" if frontsidep else "backside"
-    cm_side = read_template(f"common/{side}.html")
-    card_side = read_template(f"card{cardn}/{side}.html")
-    return cm_config + cm_hanzi_writer + cm_common + cm_side + card_side
+from lib.model import generate_model
 
 
 def gen_sound(config, hanzi):
     ttsCacheDir = cm.cacheDir(config) + "/tts/"
     locale = config.get("locale")
     deckName = config.get("deckName")
+    cleanedDeckName = cm.cleaned_filename(deckName)
     cm.mkdirp(ttsCacheDir)
 
     charEnc = base64.urlsafe_b64encode(hanzi.encode()).decode()
     localeEnc = base64.urlsafe_b64encode(locale.encode()).decode()
-    name = f"{deckName}_{localeEnc}_{charEnc}.mp3"
+    name = f"{cleanedDeckName}_{localeEnc}_{charEnc}.mp3"
     audioPath = ttsCacheDir + "/" + name
 
     if not os.path.isfile(audioPath) or cm.fileEmptyP(audioPath):
@@ -49,7 +35,7 @@ def gen_sound(config, hanzi):
     return {"name": name, "path": audioPath}
 
 
-def add_hanzi_writer_data(config, pkg):
+def add_hanzi_writer_data(config, mediaColl):
     print("[[Adding hanzi writer data]]")
     hanziWriterDataCache = cm.cacheDir(config) + "/hanzi-writer-data.zip"
 
@@ -68,22 +54,20 @@ def add_hanzi_writer_data(config, pkg):
 
     finalDir = cacheDir + "/final/"
     cm.mkdirp(finalDir)
-    media_files = []
     charsJson = []
     for filename in glob.iglob(f"{dataDir}/*"):  # iterate over files
         new_filename = f"{finalDir}/_hanzi_writer_{os.path.basename(filename)}"
         os.replace(filename, new_filename)
-        media_files.append(new_filename)
+        mediaColl.add(src=new_filename)
         charsJson.append(Path(filename).stem)
 
     hanziList = f"{finalDir}/_hanzi_writer_list.json"
     with open(hanziList, encoding="UTF8", mode="w") as fp:
         json.dump(charsJson, fp)
-    media_files.append(hanziList)
-    pkg.media_files = pkg.media_files + media_files
+    mediaColl.add(src=hanziList)
 
 
-class MyNote(ga.Note):
+class StandardNote(ga.Note):
     def __init__(self, deckId, guid, usePrevGUID, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.deckId = deckId
@@ -98,75 +82,10 @@ class MyNote(ga.Note):
             return ga.guid_for(self.oldGuid + str(self.deckId))
 
 
-modelCSS = """
-.card {
-font-family: arial;
-font-size: 20px;
-text-align: center;
-color: black;
-background-color: white;
-}
-
-# from https://github.com/jiru/ccc/blob/main/tmpl.css
-.tone-1 { color: #e30000; }
-.tone-2 { color: #02b31c; }
-.tone-3 { color: #1510f0; }
-.tone-4 { color: #8900bf; }
-.tone-5 { color: #777777; }
-
-.card.nightMode .tone { }
-.card.nightMode .tone-1 { color: #ff8080; }
-.card.nightMode .tone-2 { color: #80ff80; }
-.card.nightMode .tone-3 { color: #8080ff; }
-.card.nightMode .tone-4 { color: #df80ff; }
-.card.nightMode .tone-5 { color: #c6c6c6; }
-
-.mobile .quizButton {
-    border-radius: 50%;
-    width: 3em;
-    height: 3em;
-
-    margin: 1em 0.5em;
-    font-family: "Sans Serif", sans-serif;
-    outline: none !important;
-}
-"""
-
-
-def construct_deck(config: Config, notes, mediaDir=None):
+def construct_deck(config: Config, notes, mediaColl):
     print("[Constructing deck]")
-    media_files = []
-    my_model = ga.Model(
-        model_id=config.get("modelId"),
-        name=config.get("modelName"),
-        css=modelCSS,
-        fields=[
-            {"name": "Chinese", "excludeFromSearch": False},
-            {"name": "Pinyin", "excludeFromSearch": False},
-            {"name": "Meaning", "excludeFromSearch": False},
-            {"name": "Audio", "excludeFromSearch": True},
-            {"name": "Example sentence chinese", "excludeFromSearch": True},
-            {"name": "Example sentence translation", "excludeFromSearch": True},
-            {"name": "Example sentence pinyin", "excludeFromSearch": True},
-        ],
-        templates=[
-            {
-                "name": "Zh→Mn+Pin",
-                "qfmt": get_template(1, True),
-                "afmt": get_template(1, False),
-            },
-            {
-                "name": "Mn→Pin+Zh",
-                "qfmt": get_template(2, True),
-                "afmt": get_template(2, False),
-            },
-            {
-                "name": "Pin→Zh+Mn",
-                "qfmt": get_template(3, True),
-                "afmt": get_template(3, False),
-            },
-        ],
-    )
+    standard_model = generate_model(config, mediaColl)
+    # TODO: give hanzi writer unique names that includes deck name (since it is slightly changed from original)
 
     notes = cm.nodubBy(notes, lambda x: (x["chinese"], x["meaning"]))
 
@@ -178,8 +97,10 @@ def construct_deck(config: Config, notes, mediaDir=None):
     # We use chinese + meaning for the key and not only chinese since
     # there are notes that have the same chinese but different meaning, e.g. 還
     for note in notes:
+        idField = note.get("idField", "")
         chinese = note["chinese"]
         meaning = note["meaning"]
+        pos = note.get("pos", "")
 
         if config.get("usePrevPinyin"):
             pinyin = note["pinyin"]
@@ -195,14 +116,12 @@ def construct_deck(config: Config, notes, mediaDir=None):
             )
 
         # Use audio of old deck if available
-        if note["audioFile"] != "":
-            if mediaDir is None:
-                raise ValueError("mediaDir is None, but audioFile is not empty")
-            media_files.append(f"{mediaDir}/{note['audioFile']}")
+        if note.get("audioFile") is not None:
+            mediaColl.enable(note["audioFile"])
             audio = f"[sound:{note['audioFile']}]"
         else:
             audioRes = gen_sound(config=config, hanzi=note["chinese"])
-            media_files.append(audioRes["path"])
+            mediaColl.add(src=audioRes["path"], name=audioRes["name"])
             audio = f"[sound:{audioRes['name']}]"
 
         exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
@@ -210,28 +129,34 @@ def construct_deck(config: Config, notes, mediaDir=None):
         exampleSentencePinyin = color_pinyin(
             exSentences["pinyin"][cm.noteDictKey(note)]
         )
-        # TODO: preserve tags
 
-        my_note = MyNote(
+        my_note = StandardNote(
             deckId=config.get("deckId"),
             guid=note["guid"],
             due=note["due"],
             tags=note["tags"],
-            model=my_model,
+            model=standard_model,
             fields=[
+                idField,
                 chinese,
                 pinyin,
                 meaning,
+                pos,
                 audio,
                 exampleSentence,
                 translatedSentence,
                 exampleSentencePinyin,
             ],
+            usePrevGUID=config.get("usePrevGUID"),
         )
+        print(f"[[Adding note: {chinese}]]")
         my_deck.add_note(my_note)
 
-    pkg = ga.Package(my_deck)
-    pkg.media_files = media_files
-    add_hanzi_writer_data(config, pkg)
+    add_hanzi_writer_data(config=config, mediaColl=mediaColl)
 
-    pkg.write_to_file("/tmp/output.apkg")
+    pkg = ga.Package(my_deck)
+    pkg.media_files = mediaColl.get_media()
+
+    resCacheFile = cm.cacheDir(config) + "/res/" + "output.apkg"
+    cm.mkdirp(os.path.dirname(resCacheFile))
+    pkg.write_to_file(resCacheFile)
