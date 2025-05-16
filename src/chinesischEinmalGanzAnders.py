@@ -20,6 +20,7 @@ config = Config(
         "meaningLanguage": "Deutsch",
         "usePrevPinyin": False,
         "usePrevGUID": False,
+        "traditionalSource": True,
     }
 )
 

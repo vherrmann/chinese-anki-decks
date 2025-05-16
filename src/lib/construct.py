@@ -13,6 +13,7 @@ from lib.pinyin import cached_to_pinyin_gpt, cached_to_pinyin_check, color_pinyi
 from lib.exampleSentences import createExampleSentences
 from lib.config import Config
 from lib.model import generate_model
+from lib.opencc import cached_to_traditional
 
 
 def gen_sound(config, hanzi):
@@ -36,7 +37,6 @@ def gen_sound(config, hanzi):
 
 
 def add_hanzi_writer_data(config, mediaColl):
-    print("[[Adding hanzi writer data]]")
     hanziWriterDataCache = cm.cacheDir(config) + "/hanzi-writer-data.zip"
 
     if not os.path.isfile(hanziWriterDataCache) or cm.fileEmptyP(hanziWriterDataCache):
@@ -88,10 +88,22 @@ def construct_deck(config: Config, notes, mediaColl):
 
     notes = cm.nodubBy(notes, lambda x: (x["chinese"], x["meaning"]))
 
-    exSentences = createExampleSentences(config=config, notes=notes)
+    if not config.get("traditionalSource"):
+        print("[[Converting to traditional]]")
+
+        for note in notes:
+            note["chinese"] = cached_to_traditional(
+                hanzi=note["chinese"], config=config
+            )
+
+    exSentences = None
+    if config.get("genExampleSentence"):
+        print("[[Generating example sentences]]")
+        exSentences = createExampleSentences(config=config, notes=notes)
 
     my_deck = ga.Deck(config.get("deckId"), config.get("deckName"))
 
+    print("[[Generate nodes]]")
     # There are some duplicated entries in the notes, so we remove them
     # We use chinese + meaning for the key and not only chinese since
     # there are notes that have the same chinese but different meaning, e.g. 還
@@ -121,9 +133,13 @@ def construct_deck(config: Config, notes, mediaColl):
             mediaColl.add(src=audioRes["path"], name=audioRes["name"])
             audio = f"[sound:{audioRes['name']}]"
 
-        exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
-        translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
-        exampleSentencePinyin = exSentences["pinyin"][cm.noteDictKey(note)]
+        exampleSentence = ""
+        translatedSentence = ""
+        exampleSentencePinyin = ""
+        if config.get("genExampleSentence"):
+            exampleSentence = exSentences["chinese"][cm.noteDictKey(note)]
+            translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
+            exampleSentencePinyin = exSentences["pinyin"][cm.noteDictKey(note)]
 
         my_note = StandardNote(
             deckId=config.get("deckId"),
@@ -141,12 +157,14 @@ def construct_deck(config: Config, notes, mediaColl):
                 exampleSentence,
                 translatedSentence,
                 exampleSentencePinyin,
-            ],
+            ]
+            + note.get("additionalFields", []),
             usePrevGUID=config.get("usePrevGUID"),
         )
         print(f"[[Adding note: {chinese}]]")
         my_deck.add_note(my_note)
 
+    print("[[Adding hanzi writer data]]")
     add_hanzi_writer_data(config=config, mediaColl=mediaColl)
 
     pkg = ga.Package(my_deck)

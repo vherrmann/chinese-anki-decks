@@ -18,8 +18,11 @@ class Config:
         self.__conf = configData
         self.__setters = setters
 
-    def get(self, name):
-        return self.__conf[name]
+    def get(self, name, default=None):
+        if name[-1] == "?":
+            return self.__conf.get(name, default)
+        else:
+            return self.__conf[name]
 
     def set(self, name, value):
         if name in self.__setters:

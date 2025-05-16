@@ -7,17 +7,28 @@ import lib.common as cm
 import tempfile
 import re
 
-deckName = "A Course in Contemporary Chinese B1-B6 + ε"
+deckName = "Practical Audio Visual Chinese Book 1-4 + ε"
 
-dataFile = "A_Course_in_Contemporary_Chinese__B1-B6_Traditional.apkg"
+dataFile = "PAVC_1234_VocabularyGrammar_ReadingWriting.apkg"
 
 
 scriptDir = os.path.dirname(__file__)
 dataDir = scriptDir + "/../data/"
 
+
+def fixData(rawNote):
+    def replaceInFlds(id, fn):
+        if rawNote["id"] == id:
+            for fld in rawNote["flds"]:
+                fld = fn(fld)
+
+    replaceInFlds(1491714927757, lambda x: x.replace("physicaly", "physically"))
+    replaceInFlds(1491714927781, lambda x: x.replace("usualy", "usually"))
+
+
 with MediaCollector() as mediaColl:
     data = extract_data(
-        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=True
+        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=False
     )
     notes = []
 
@@ -27,13 +38,13 @@ with MediaCollector() as mediaColl:
     # otherwise importing the deck to update the old one won't work.
     config = Config(
         {
-            "modelId": 1085856635,
-            "deckId": 2068081752,
+            "modelId": 1744143233,
+            "deckId": 1753430173,
             "deckName": deckName,
             "modelName": deckName,
             "locale": "zh-TW",
             "meaningLanguage": "English",
-            "usePrevPinyin": True,
+            "usePrevPinyin": False,  # FIXME: change
             "usePrevGUID": True,
             "traditionalSource": True,
         }
@@ -41,21 +52,22 @@ with MediaCollector() as mediaColl:
 
     rawNotes = data["notes"]
     for rawNote in rawNotes:
-        # clean html from pinyin
-        cleanedPinyin = cm.cleanHtml(rawNote["flds"][3])
         # FIXME: allow additional fields
-        audioFile = re.search(r"\[sound:(.+)\]", rawNote["flds"][6]).group(1)
+        tags = rawNote["tags"]
+        # Grammar doesn't work with the assumptions about cards
+        # this deck makes
+        if "Grammar" in tags:
+            continue
+        fixData(rawNote)
         notes.append(
             {
                 "id": rawNote["flds"][0],
                 "guid": rawNote["guid"],
                 "due": rawNote["due"],
-                "tags": rawNote["tags"],
+                "tags": tags,
                 "chinese": rawNote["flds"][1],
-                "meaning": rawNote["flds"][5],
-                "pos": rawNote["flds"][4],
-                "audioFile": audioFile,
-                "pinyin": cleanedPinyin,
+                "meaning": rawNote["flds"][3],
+                "pinyin": rawNote["flds"][2],
             }
         )
 

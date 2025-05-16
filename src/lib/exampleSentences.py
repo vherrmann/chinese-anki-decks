@@ -91,9 +91,7 @@ def createExampleSentences(config, notes):
     }
 
     pinyin = {
-        # TODO: use better pinyin translator
-        key: to_pinyin_basic(sentence)
-        for key, sentence in exampleSentences.items()
+        key: to_pinyin_basic(sentence) for key, sentence in exampleSentences.items()
     }
 
     translatedSentences = {

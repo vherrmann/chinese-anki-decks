@@ -39,6 +39,7 @@ class TemplateGen:
             "libs/separate-pinyin-in-syllables.js",
         ]
         self.scriptNames = []
+        self.templateTransformer = config.get("templateTransformer", lambda x: x)
         for scriptPath in scriptPaths:
             absolutePath = f"{cm.scriptDir}/templates/common/{scriptPath}"
             name = "_" + cm.cleaned_filename(deckName) + "_" + Path(absolutePath).name
@@ -59,11 +60,12 @@ class TemplateGen:
             cm_side = read_template(f"common/backside.html")
         cm_common = read_template(f"common/common.html")
         card_side = read_template(f"card{cardn}/{side}.html")
-        return includes + cm_side + cm_common + card_side
+        return self.templateTransformer(includes + cm_side + cm_common + card_side)
 
 
 def generate_model(config, mediaColl):
     tGen = TemplateGen(config, mediaColl)
+    additionalFields = config.get("additionalFields?", [])
     return ga.Model(
         model_id=config.get("modelId"),
         name=config.get("modelName"),
@@ -78,7 +80,8 @@ def generate_model(config, mediaColl):
             {"name": "Example sentence chinese", "excludeFromSearch": True},
             {"name": "Example sentence translation", "excludeFromSearch": True},
             {"name": "Example sentence pinyin", "excludeFromSearch": True},
-        ],
+        ]
+        + list(map(lambda x: {"name": x, "excludeFromSearch": True}, additionalFields)),
         templates=[
             {
                 "name": "Zh→Mn+Pin",

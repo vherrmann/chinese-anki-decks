@@ -91,7 +91,7 @@ def to_pinyin_gpt(
     meaningStr = (
         ""
         if meaning is None
-        else f"{meaning} (language the meaning: {meaningLanguage})"
+        else f"{meaning} (language of the meaning: {meaningLanguage})"
     )
     msg = f"""
 You will be given a chinese word or phrase, the meaning of that word together with the language of the meaning or phrase and the hanyu-pinyin of that word or phrase.
@@ -121,19 +121,24 @@ Pinyin: {basicPinyin}
     if "INCORRECT" in lastLine or "CORRECT" not in lastLine:
         check = True
 
-    res = basicPinyin
-    if check or (basicPinyin != previousPinyin):
+    cleanPinyin = lambda x: re.sub(r"\s+", "", x).lower()
+    res = previousPinyin
+    if check or (cleanPinyin(basicPinyin) != cleanPinyin(previousPinyin)):
         if check:
             print(f"Msg: {msg}")
             print(classif)
         print(f"Hanzi: {hanzi}")
         print(f"Locale: {locale}")
         print(f"Meaning: {meaning}")
+        print(f"(-1) User input")
         print(f"(0) Basic: {basicPinyin}")
         print(f"(1) Prev : {previousPinyin}")
         print("pinyins differ or gpt doesn't like it. Please check the result.")
         i = int(input("Which should get be used? "))
-        res = [res, basicPinyin, previousPinyin][i]
+        if i == -1:
+            res = input()
+        else:
+            res = [basicPinyin, previousPinyin][i]
     print(f"Got Pinyin {res} for Hanzi {hanzi}")
     return res
 
@@ -143,7 +148,7 @@ def cached_to_pinyin_gpt(
 ):
     locale = config.get("locale")
     hash = cm.hash([hanzi, meaning, locale, meaningLanguage])
-    cachePath = cm.cacheDir(config) + "/pinyin/" + hash
+    cachePath = cm.cacheDirWithName("pinyin") + hash
     return cm.withCacheSetPath(cachePath)(to_pinyin_gpt)(
         locale=locale,
         hanzi=hanzi,
