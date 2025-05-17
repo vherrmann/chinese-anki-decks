@@ -107,7 +107,7 @@ def construct_deck(config: Config, notes, mediaColl):
     # There are some duplicated entries in the notes, so we remove them
     # We use chinese + meaning for the key and not only chinese since
     # there are notes that have the same chinese but different meaning, e.g. 還
-    for note in notes:
+    for i, note in enumerate(notes):
         idField = note.get("idField", "")
         chinese = note["chinese"]
         meaning = note["meaning"]
@@ -161,7 +161,7 @@ def construct_deck(config: Config, notes, mediaColl):
             + note.get("additionalFields", []),
             usePrevGUID=config.get("usePrevGUID"),
         )
-        print(f"[[Adding note: {chinese}]]")
+        print(f"[[Adding note ({i+1}/{len(notes)}): {chinese}]]")
         my_deck.add_note(my_note)
 
     print("[[Adding hanzi writer data]]")

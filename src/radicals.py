@@ -4,32 +4,34 @@ from lib.extract import extract_data
 from lib.config import Config
 from lib.mediaCollector import MediaCollector
 import lib.common as cm
+from lib.templates import Templates
 import tempfile
 import re
 
-deckName = "Practical Audio Visual Chinese Book 1-4 + ε"
+deckName = "All 214 Chinese Radicals + ε"
 
-dataFile = "PAVC_1234_VocabularyGrammar_ReadingWriting.apkg"
+dataFile = "All_214_Chinese_Radicals.apkg"
 
 
 scriptDir = os.path.dirname(__file__)
 dataDir = scriptDir + "/../data/"
 
 
-def fixData(rawNote):
-    def replaceInFlds(id, fn):
-        if rawNote["id"] == id:
-            for fld in rawNote["flds"]:
-                fld = fn(fld)
-
-    replaceInFlds(1491714927757, lambda x: x.replace("physicaly", "physically"))
-    replaceInFlds(1491714927781, lambda x: x.replace("usualy", "usually"))
-    replaceInFlds(1491714928729, lambda x: x.replace("desert", "dessert"))
+def templateTransformer(tmp):
+    return tmp.replace("colorPinyinSentenceElement(`{{Example sentence pinyin}}`)", "")
 
 
 with MediaCollector() as mediaColl:
     data = extract_data(
-        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=False
+        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=True
+    )
+
+    examplesElement = """
+    <h3>Examples:</h3>
+    {{Examples}}
+    """
+    templates = Templates(
+        deckName, mediaColl, infoElement=examplesElement, colorPinyin=False
     )
     notes = []
 
@@ -39,37 +41,32 @@ with MediaCollector() as mediaColl:
     # otherwise importing the deck to update the old one won't work.
     config = Config(
         {
-            "modelId": 1744143233,
-            "deckId": 1753430173,
+            "modelId": 1729464388,
+            "deckId": 1919351979,
             "deckName": deckName,
             "modelName": deckName,
             "locale": "zh-TW",
             "meaningLanguage": "English",
-            "usePrevPinyin": False,  # FIXME: change
+            "usePrevPinyin": True,
             "usePrevGUID": True,
             "traditionalSource": True,
-            "genExampleSentence": True,
+            "genExampleSentence": False,
+            "additionalFields?": ["Examples"],
+            "templates?": templates,
         }
     )
 
     rawNotes = data["notes"]
     for rawNote in rawNotes:
-        # FIXME: allow additional fields
-        tags = rawNote["tags"]
-        # Grammar doesn't work with the assumptions about cards
-        # this deck makes
-        if "Grammar" in tags:
-            continue
-        fixData(rawNote)
         notes.append(
             {
-                "id": rawNote["flds"][0],
                 "guid": rawNote["guid"],
                 "due": rawNote["due"],
-                "tags": tags,
-                "chinese": rawNote["flds"][1],
+                "tags": rawNote["tags"],
+                "chinese": rawNote["flds"][0],
                 "meaning": rawNote["flds"][3],
                 "pinyin": rawNote["flds"][2],
+                "additionalFields": [rawNote["flds"][4]],
             }
         )
 

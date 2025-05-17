@@ -69,7 +69,7 @@ def createExampleSentences(config, notes):
         return cm.withCacheSetPath(exSentCacheFile)(createExampleSentence)(note, locale)
 
     def translateSentence(meaningLanguage, sentence):
-        msg = f"""Please translate the following sentence to {meaningLanguage}:
+        msg = f"""Please translate the following sentence to {meaningLanguage}. Do not comment on the translation.:
                   {sentence}"""
         completion = askGPT(msg)
 

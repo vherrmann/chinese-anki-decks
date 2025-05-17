@@ -104,7 +104,7 @@ You should write out the word CORRECT if the pinyin fits the chinese and the mea
 You should write out the word INCORRECT if the pinyin does not fit the chinese and the meaning.
 Do not write anything other than CORRECT, if the pinyin is correct.
 If the pinyin is incorrect, please explain your reasining thoroughly.
-After your explanation, please write CORRECT or INCORRECT again. You may change your assessememt, if you think you made a mistake earlier.
+After your explanation, please write either CORRECT or INCORRECT according to your judgment. You may change your judgement, based on the explanation.
 -------------------------------
 Chinese: {hanzi}
 Meaning: {meaningStr}

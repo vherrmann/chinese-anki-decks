@@ -21,6 +21,7 @@ config = Config(
         "usePrevPinyin": False,
         "usePrevGUID": False,
         "traditionalSource": True,
+        "genExampleSentence": True,
     }
 )
 

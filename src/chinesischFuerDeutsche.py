@@ -62,6 +62,7 @@ with MediaCollector() as mediaColl:
             "usePrevPinyin": True,
             "usePrevGUID": True,
             "traditionalSource": False,
+            "genExampleSentence": True,
         }
     )
 

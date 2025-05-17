@@ -114,9 +114,8 @@
            +'|y(?:'+a+'(?:o|ng??)?|'+e+'|'+i+'(?:ng?)?|'+o+'(?:u|ng)?|u(?:'+e+'|'+a+'n)|'+u+'n??)'
          +')'
          +'([12345])?';
-    pinyin = pinyin.normalize();
+    pinyin = pinyin.normalize().toLowerCase().trim();
     //pinyin = pinyin.split('/')[0];
-    pinyin = pinyin.trim();
     const re = new RegExp(regex, "g");
     const matches = pinyin.matchAll(re);
     var tones = Array.from(matches).map(function (match) {
@@ -185,37 +184,55 @@
     colorPinyin(pinyinElement, pinyin);
   }
 
-  function initializeCharsTarget(chinese, pinyin, colorp) {
+  async function hanziCharsFrom(chinese) {
+    const hanziChars = [];
+    for (const c of Array.from(chinese)) {
+      const b = await hanziCharExistsP(c);
+      if (b) {
+        hanziChars.push(c);
+      }
+    }
+    return hanziChars;
+  }
+
+  async function initializeCharsTarget(chinese, pinyin, colorp) {
     const charsTarget = document.getElementById("characters-target-div");
 
-    var tones = getTones(pinyin);
-    for (const [i, c] of Array.from(chinese).entries()) {
+    let tones = getTones(pinyin);
+    const onlyHanzi = await hanziCharsFrom(chinese);
+    const tonesWrong = tones.length !== onlyHanzi.length;
+    if (tonesWrong) {
+      console.error(
+        "Tones array is shorter than characters: " +
+          tones.length +
+          " vs " +
+          onlyHanzi.length,
+      );
+    }
+    for (const c of chinese) {
       const charTarget = document.createElement("div");
       charsTarget.appendChild(charTarget);
       charTarget.style.display = "inline";
-      hanziCharExistsP(c).then((b) => {
-        if (b) {
-          if (tones.length <= i) {
-            throw new Error("Tones array is shorter than characters");
-          } else if (colorp) {
-            var strokeColor = toneToColor(tones[i]);
-          } else {
-            var strokeColor = "#555";
-          }
-          const writer = HanziWriter.create(charTarget, c, {
-            width: 100,
-            height: 100,
-            padding: 5,
-            strokeColor: strokeColor,
-            radicalColor: "#168F16", // green
-          });
+      const b = await hanziCharExistsP(c);
+      if (b) {
+        if (!tonesWrong && colorp) {
+          var strokeColor = toneToColor(tones.shift());
         } else {
-          charTarget.innerHTML = c;
-          charTarget.style.fontFamily = "Source Han Serif, SimSun";
-          charTarget.style.fontSize = "80px";
-          charTarget.style.verticalAlign = "20px";
+          var strokeColor = "#555";
         }
-      });
+        const writer = HanziWriter.create(charTarget, c, {
+          width: 100,
+          height: 100,
+          padding: 5,
+          strokeColor: strokeColor,
+          radicalColor: "#168F16", // green
+        });
+      } else {
+        charTarget.innerHTML = c;
+        charTarget.style.fontFamily = "Source Han Serif, SimSun";
+        charTarget.style.fontSize = "80px";
+        charTarget.style.verticalAlign = "20px";
+      }
     }
   }
 </script>
