@@ -9,7 +9,7 @@ import re
 
 deckName = "A Course in Contemporary Chinese B1-B6 + ε"
 
-dataFile = "A_Course_in_Contemporary_Chinese__B1-B6_Traditional.apkg"
+dataFile = "A_Course_in_Contemporary_Chinese__B1-B6_Traditional.apkg.zst"
 
 
 scriptDir = os.path.dirname(__file__)
@@ -17,7 +17,10 @@ dataDir = scriptDir + "/../data/"
 
 with MediaCollector() as mediaColl:
     data = extract_data(
-        pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=True
+        pkgPath=dataDir + dataFile,
+        mediaColl=mediaColl,
+        collectionAnki21p=True,
+        decompress=True,
     )
     notes = []
 

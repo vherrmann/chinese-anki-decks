@@ -35,6 +35,7 @@
                 mypy
                 zhon
                 pypinyin-dict
+                zstandard
               ]
             ))
 

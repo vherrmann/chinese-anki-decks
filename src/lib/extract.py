@@ -2,6 +2,7 @@ import tempfile
 import shutil
 import sqlite3
 import json
+import zstandard
 
 
 def getDueForNote(nid, con):
@@ -52,9 +53,15 @@ def getColInfo(con):
     return {"deckId": deckId, "modelId": modelId}
 
 
-def extract_data(pkgPath, collectionAnki21p, mediaColl):
+def extract_data(pkgPath, collectionAnki21p, mediaColl, decompress=False):
     print(f"[Extracting data from {pkgPath}]")
     with tempfile.TemporaryDirectory() as tmpdirname:
+        if decompress:
+            dctx = zstandard.ZstdDecompressor()
+            uncompPkgPath = tmpdirname + "/uncompressed.apkg"
+            with open(pkgPath, "rb") as ifh, open(uncompPkgPath, "wb") as ofh:
+                dctx.copy_stream(ifh, ofh)
+            pkgPath = uncompPkgPath
         # list dir content
         shutil.unpack_archive(pkgPath, tmpdirname, format="zip")
         if collectionAnki21p:
