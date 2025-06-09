@@ -1,0 +1,13 @@
+#+TITLE: Anki decks for common text books
+
+This repo contains python scripts in ~src/~ that use the old decks in ~data/~ to create decks with a uniform style. This style includes:
+- audio
+- pinyin
+- colored hanzi, according to tone
+- example sentences
+- quizzes
+- links to dictionaries
+  - for each character of the word to [[https://hanzicraft.com/][HanziCraft]]
+  - for the word itself to either [[https://www.pleco.com/][Pleco]] or [[https://www.mdbg.net/chinese/dictionary][MDBG Chinese Dictionary]]
+ 
+This repository is a rewrite of [[https://github.com/vherrmann/anki-chin-deutsche][vherrmann/anki-chin-deutsche: Anki deck helper scripts.]] Further information about the previous version can be found on [[https://valentin-herrmann.de/p/my-anki-decks-for-learning-chinese/][My anki decks for learning chinese]]. Most of the blog post still applies to this newer version.
