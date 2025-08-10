@@ -38,7 +38,7 @@ with MediaCollector() as mediaColl:
             "meaningLanguage": "English",
             "usePrevPinyin": True,
             "usePrevGUID": True,
-            "traditionalSource": True,
+            "convertToTraditional": True,
             "genExampleSentence": True,
         }
     )

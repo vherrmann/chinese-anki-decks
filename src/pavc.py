@@ -47,7 +47,7 @@ with MediaCollector() as mediaColl:
             "meaningLanguage": "English",
             "usePrevPinyin": False,  # FIXME: change
             "usePrevGUID": True,
-            "traditionalSource": True,
+            "convertToTraditional": True,
             "genExampleSentence": True,
         }
     )

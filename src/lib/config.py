@@ -8,6 +8,10 @@ class ConfigData(TypedDict):
     modelName: str
     locale: str
     meaningLanguage: str
+    usePrevPinyin: bool
+    usePrevGUID: bool
+    convertToTraditional: bool
+    genExampleSentence: bool
 
 
 class Config:

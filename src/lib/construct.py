@@ -88,20 +88,20 @@ def construct_deck(config: Config, notes, mediaColl):
 
     notes = cm.nodubBy(notes, lambda x: (x["chinese"], x["meaning"]))
 
-    if not config.get("traditionalSource"):
+    if not config.get("convertToTraditional"):
         print("[[Converting to traditional]]")
 
         for note in notes:
-            note["chinese"] = cached_to_traditional(
-                hanzi=note["chinese"], config=config
-            )
+            for key in ["chinese", "meaning", "pinyin"]:
+                if key in note:
+                    note[key] = cached_to_traditional(hanzi=note[key], config=config)
 
     exSentences = None
     if config.get("genExampleSentence"):
         print("[[Generating example sentences]]")
         exSentences = createExampleSentences(config=config, notes=notes)
 
-    my_deck = ga.Deck(config.get("deckId"), config.get("deckName"))
+    new_deck = ga.Deck(config.get("deckId"), config.get("deckName"))
 
     print("[[Generate nodes]]")
     # There are some duplicated entries in the notes, so we remove them
@@ -162,12 +162,12 @@ def construct_deck(config: Config, notes, mediaColl):
             usePrevGUID=config.get("usePrevGUID"),
         )
         print(f"[[Adding note ({i+1}/{len(notes)}): {chinese}]]")
-        my_deck.add_note(my_note)
+        new_deck.add_note(my_note)
 
     print("[[Adding hanzi writer data]]")
     add_hanzi_writer_data(config=config, mediaColl=mediaColl)
 
-    pkg = ga.Package(my_deck)
+    pkg = ga.Package(new_deck)
     pkg.media_files = mediaColl.get_media()
 
     resCacheFile = cm.cacheDir(config) + "/res/" + "output.apkg"

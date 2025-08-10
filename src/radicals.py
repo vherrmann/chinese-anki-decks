@@ -49,7 +49,7 @@ with MediaCollector() as mediaColl:
             "meaningLanguage": "English",
             "usePrevPinyin": True,
             "usePrevGUID": True,
-            "traditionalSource": True,
+            "convertToTraditional": True,
             "genExampleSentence": False,
             "additionalFields?": ["Examples"],
             "templates?": templates,
