@@ -88,13 +88,13 @@ def construct_deck(config: Config, notes, mediaColl):
 
     notes = cm.nodubBy(notes, lambda x: (x["chinese"], x["meaning"]))
 
-    if not config.get("traditionalSource"):
+    if not config.get("convertToTraditional"):
         print("[[Converting to traditional]]")
 
         for note in notes:
-            note["chinese"] = cached_to_traditional(
-                hanzi=note["chinese"], config=config
-            )
+            for key in ["chinese", "meaning", "pinyin"]:
+                if key in note:
+                    note[key] = cached_to_traditional(hanzi=note[key], config=config)
 
     exSentences = None
     if config.get("genExampleSentence"):
