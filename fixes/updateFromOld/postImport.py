@@ -1,5 +1,3 @@
-import json
-import requests
 from common import anki_request
 
 # URL for AnkiConnect
