@@ -26,6 +26,18 @@ config = Config(
 )
 
 
+def fixData(rawNote):
+    def replaceInFlds(id, fn):
+        if rawNote["id"] == id:
+            print(f"Fixing note {id} in deck {deckName}")
+            flds = rawNote["flds"]
+            for i in range(len(flds)):
+                flds[i] = fn(flds[i])
+
+    rawNote["flds"] = list(map(lambda x: x.replace("&nbsp;", ""), rawNote["flds"]))
+    replaceInFlds(1521400358687, lambda x: x.replace("注意", "主意"))
+
+
 scriptDir = os.path.dirname(__file__)
 
 with MediaCollector() as mediaColl:
@@ -36,15 +48,9 @@ with MediaCollector() as mediaColl:
     rawNotes = data["notes"]
     notes = []
     for rawNote in rawNotes:
-        # pos and meaning are in the original meaning field
-        prevMeaning = rawNote["flds"][1]
-        meaningMatch = re.match(r"\((.+)\) (.+)", prevMeaning)
-        if meaningMatch is None:
-            pos = ""
-            meaning = prevMeaning
-        else:
-            pos = meaningMatch.group(1)
-            meaning = meaningMatch.group(2)
+        fixData(rawNote)
+        meaning = rawNote["flds"][1]
+        pos = ""
         # clean html from pinyin
         cleanedPinyin = cm.cleanHtml(rawNote["flds"][2])
         # fix common mistake in prev. deck
