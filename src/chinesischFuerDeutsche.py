@@ -6,10 +6,16 @@ from lib.mediaCollector import MediaCollector
 import lib.common as cm
 import tempfile
 import re
+import sys
 
-deckName = "Chinesisch für Deutsche Buch 1-2 + ε"
+convertToTraditional = "--simplified" not in sys.argv
 
-dataFile = "Chinesisch_für_Deutsche_1+2.apkg"
+if convertToTraditional:
+    deckName = f"Chinesisch für Deutsche Buch 1-2 + ε"
+else:
+    deckName = f"Chinesisch für Deutsche Buch 1-2 + ε (Simplified)"
+
+dataFile = f"Chinesisch_für_Deutsche_1+2.apkg"
 
 
 scriptDir = os.path.dirname(__file__)
@@ -57,11 +63,11 @@ with MediaCollector() as mediaColl:
             "deckId": 1827575035,
             "deckName": deckName,
             "modelName": deckName,
-            "locale": "zh-TW",
+            "locale": "zh-TW" if convertToTraditional else "zh-CN",
             "meaningLanguage": "Deutsch",
             "usePrevPinyin": True,
             "usePrevGUID": True,
-            "traditionalSource": False,
+            "convertToTraditional": not convertToTraditional,
             "genExampleSentence": True,
         }
     )
