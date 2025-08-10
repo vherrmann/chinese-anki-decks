@@ -41,6 +41,7 @@ def generate_model(config, mediaColl):
             {"name": "Example sentence pinyin", "excludeFromSearch": True},
         ]
         + list(map(lambda x: {"name": x, "excludeFromSearch": True}, additionalFields)),
+        sort_field_index=1,
         templates=[
             templates.template1(),
             templates.template2(),
