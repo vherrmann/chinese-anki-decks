@@ -1,4 +1,5 @@
-from typing import TypedDict
+from typing import TypedDict, Callable
+import genanki as ga
 
 
 class ConfigData(TypedDict):
@@ -12,6 +13,7 @@ class ConfigData(TypedDict):
     usePrevGUID: bool
     convertToTraditional: bool
     genExampleSentence: bool
+    noteToSubdeck: Callable[ga.Note, str | None]
 
 
 class Config:

@@ -51,6 +51,7 @@ with MediaCollector() as mediaColl:
             "usePrevGUID": True,
             "convertToTraditional": True,
             "genExampleSentence": False,
+            "noteToSubdeck": lambda note: None,
             "additionalFields?": ["Examples"],
             "templates?": templates,
         }

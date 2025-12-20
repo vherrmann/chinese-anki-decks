@@ -101,14 +101,15 @@ def construct_deck(config: Config, notes, mediaColl):
         print("[[Generating example sentences]]")
         exSentences = createExampleSentences(config=config, notes=notes)
 
-    new_deck = ga.Deck(config.get("deckId"), config.get("deckName"))
+    parentDeck = ga.Deck(config.get("deckId"), config.get("deckName"))
+    subdeckMap = {}
 
     print("[[Generate nodes]]")
     # There are some duplicated entries in the notes, so we remove them
     # We use chinese + meaning for the key and not only chinese since
     # there are notes that have the same chinese but different meaning, e.g. 還
     for i, note in enumerate(notes):
-        idField = note.get("idField", "")
+        idField = note.get("id", "")
         chinese = note["chinese"]
         meaning = note["meaning"]
         pos = note.get("pos", "")
@@ -141,7 +142,7 @@ def construct_deck(config: Config, notes, mediaColl):
             translatedSentence = exSentences["translated"][cm.noteDictKey(note)]
             exampleSentencePinyin = exSentences["pinyin"][cm.noteDictKey(note)]
 
-        my_note = StandardNote(
+        new_note = StandardNote(
             deckId=config.get("deckId"),
             guid=note["guid"],
             due=note["due"],
@@ -162,12 +163,22 @@ def construct_deck(config: Config, notes, mediaColl):
             usePrevGUID=config.get("usePrevGUID"),
         )
         print(f"[[Adding note ({i+1}/{len(notes)}): {chinese}]]")
-        new_deck.add_note(my_note)
+        subdeckName = config.get("noteToSubdeck")(new_note)
+        if subdeckName is not None:
+            if subdeckName not in subdeckMap:
+                subdeckId = cm.hashToId(str(config.get("deckId")) + subdeckName)
+                subdeck = ga.Deck(
+                    subdeckId, config.get("deckName") + "::" + subdeckName
+                )
+                subdeckMap[subdeckName] = subdeck
+            subdeckMap[subdeckName].add_note(new_note)
+        else:
+            parentDeck.add_note(new_note)
 
     print("[[Adding hanzi writer data]]")
     add_hanzi_writer_data(config=config, mediaColl=mediaColl)
 
-    pkg = ga.Package(new_deck)
+    pkg = ga.Package([parentDeck] + list(subdeckMap.values()))
     pkg.media_files = mediaColl.get_media()
 
     resCacheFile = cm.cacheDir(config) + "/res/" + "output.apkg"

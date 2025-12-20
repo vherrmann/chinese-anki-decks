@@ -4,7 +4,6 @@ from collections import OrderedDict
 import json
 import hashlib
 import re
-import re
 
 scriptDir = os.path.dirname(__file__) + "/../"
 
@@ -32,6 +31,11 @@ def nodubBy(lst, fn=(lambda x: x)):
 
 def hash(data):
     return hashlib.sha1(str(data).encode()).hexdigest()
+
+
+def hashToId(s: str) -> int:
+    h = hashlib.sha256(s.encode("utf-8")).digest()
+    return (1 << 30) + (int.from_bytes(h, "big") % (1 << 30))
 
 
 def yesno(prompt):

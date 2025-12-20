@@ -47,6 +47,17 @@ def fixData(rawNote):
     replaceInFlds(1252888453500, lambda x: x.replace("chuānghu", "chuānghù"))
 
 
+def noteToSubDeck(note):
+    if "extra" in note.tags:
+        return "Extra"
+    bTags = list(filter(lambda s: s.startswith("B"), note.tags))
+    cTags = list(filter(lambda s: s.startswith("C"), note.tags))
+    min_b = min(map(int, map(lambda s: s[1:], bTags)))
+    min_c = min(map(int, map(lambda s: s[1:], cTags)))
+
+    return f"B{min_b:01d}::C{min_c:02d}"
+
+
 with MediaCollector() as mediaColl:
     data = extract_data(
         pkgPath=dataDir + dataFile, mediaColl=mediaColl, collectionAnki21p=False
@@ -69,6 +80,7 @@ with MediaCollector() as mediaColl:
             "usePrevGUID": True,
             "convertToTraditional": not convertToTraditional,
             "genExampleSentence": True,
+            "noteToSubdeck": noteToSubDeck,
         }
     )
 

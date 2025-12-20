@@ -5,6 +5,7 @@ from lib.config import Config
 from lib.mediaCollector import MediaCollector
 import lib.common as cm
 import tempfile
+import itertools
 import re
 
 deckName = "Practical Audio Visual Chinese Book 1-4 + ε"
@@ -25,6 +26,19 @@ def fixData(rawNote):
     replaceInFlds(1491714927757, lambda x: x.replace("physicaly", "physically"))
     replaceInFlds(1491714927781, lambda x: x.replace("usualy", "usually"))
     replaceInFlds(1491714928729, lambda x: x.replace("desert", "dessert"))
+
+
+def noteToSubDeck(note):
+    locTagMatch = next(
+        filter(
+            lambda x: x is not None,
+            (map(lambda x: re.fullmatch(r"B(\d+)-CH(\d+)", x), note.tags)),
+        )
+    )
+    book = int(locTagMatch.group(1))
+    chapter = int(locTagMatch.group(2))
+
+    return f"B{book:01d}::C{chapter:02d}"
 
 
 with MediaCollector() as mediaColl:
@@ -49,6 +63,7 @@ with MediaCollector() as mediaColl:
             "usePrevGUID": True,
             "convertToTraditional": True,
             "genExampleSentence": True,
+            "noteToSubdeck": noteToSubDeck,
         }
     )
 
