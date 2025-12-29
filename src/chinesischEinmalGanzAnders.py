@@ -7,7 +7,7 @@ import lib.common as cm
 import genanki as ga
 import csv
 
-deckName = "Chinesisch einmal ganz anders 1 + ε"
+deckName = "Chinesisch einmal ganz anders 1-2 + ε"
 
 dataFile = "Chinesisch_einmal_ganz_anders_Band_1.apkg"
 
@@ -19,8 +19,20 @@ def noteToSubDeck(note):
     min_chap = min(
         map(lambda s: int(s[1:]), filter(lambda s: s.startswith("C"), note.tags))
     )
+    categoryTags = {
+        "lek": "Lektionstexte",
+        "üb": "Übungen",
+        "zu": "Zusamm. Übungen",
+        "gr": "Grundwortschatz",
+        "wi": "Wiederholung",
+    }
+    categoryTag = None
+    for tag in note.tags:
+        if tag in categoryTags:
+            categoryTag = categoryTags[tag]
+            break
 
-    return f"B{min_book}::C{min_chap:02d}"
+    return f"B{min_book}::C{min_chap:02d}" + (f"::{categoryTag}" if categoryTag else "")
 
 
 config = Config(
@@ -28,6 +40,7 @@ config = Config(
         "modelId": 1437479615,  # import random; random.randrange(1 << 30, 1 << 31)
         "deckId": 1162970673,  # import random; random.randrange(1 << 30, 1 << 31)
         "deckName": deckName,
+        "deckDescription": "See also https://valentin-herrmann.de/p/my-anki-decks-for-learning-chinese/.",
         "modelName": deckName,
         "locale": "zh-TW",
         "meaningLanguage": "Deutsch",

@@ -101,7 +101,11 @@ def construct_deck(config: Config, notes, mediaColl):
         print("[[Generating example sentences]]")
         exSentences = createExampleSentences(config=config, notes=notes)
 
-    parentDeck = ga.Deck(config.get("deckId"), config.get("deckName"))
+    parentDeck = ga.Deck(
+        deck_id=config.get("deckId"),
+        name=config.get("deckName"),
+        description=config.get("deckDescription"),
+    )
     subdeckMap = {}
 
     print("[[Generate nodes]]")
@@ -168,7 +172,7 @@ def construct_deck(config: Config, notes, mediaColl):
             if subdeckName not in subdeckMap:
                 subdeckId = cm.hashToId(str(config.get("deckId")) + subdeckName)
                 subdeck = ga.Deck(
-                    subdeckId, config.get("deckName") + "::" + subdeckName
+                    deck_id=subdeckId, name=config.get("deckName") + "::" + subdeckName
                 )
                 subdeckMap[subdeckName] = subdeck
             subdeckMap[subdeckName].add_note(new_note)

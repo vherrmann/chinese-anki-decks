@@ -73,6 +73,7 @@ with MediaCollector() as mediaColl:
             "modelId": 1553102416,
             "deckId": 1827575035,
             "deckName": deckName,
+            "deckDescription": "See also https://valentin-herrmann.de/p/my-anki-decks-for-learning-chinese/.",
             "modelName": deckName,
             "locale": "zh-TW" if convertToTraditional else "zh-CN",
             "meaningLanguage": "Deutsch",
