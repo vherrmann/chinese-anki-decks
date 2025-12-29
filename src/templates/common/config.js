@@ -2,7 +2,7 @@ var dconfigPlt = {
   common: {
     leniency: 1,
     averageDistanceThreshold: 250,
-    quizSize: 200,
+    quizSize: 300,
     pinyin: {
       tone1: "#e30000",
       tone2: "#02b31c",
