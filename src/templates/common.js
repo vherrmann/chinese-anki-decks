@@ -1,29 +1,26 @@
-<script>
-  // utils
-  function createButton(id, innerHTML, onclick) {
+// See src/lib/templates.py
+import * as SepPinyin from "SepPinyin";
+import * as Config from "Config";
+
+// utils
+export const createButton = (id, innerHTML, onclick) => {
     const button = document.createElement("button");
     button.className = "quizButton";
     button.id = id;
     button.innerHTML = innerHTML;
     button.onclick = onclick;
     return button;
-  }
+};
 
-  function removeFadeOut(el, speed) {
-    el.style.transition = `opacity ${speed}ms linear`;
-    el.style.opacity = 0;
-    setTimeout(() => el.remove(), speed);
-  }
-
-  function getTones(pinyin) {
+export function getTones(pinyin) {
     function getToneNumber(diac) {
-      var allDiacs = ["āēīōūǖ", "áéíóúǘ", "ǎěǐǒǔǚ", "àèìòùǜ", "aeiouür"];
-      for (var i = 0; i < allDiacs.length; i++) {
-        if (allDiacs[i].includes(diac)) {
-          return i + 1;
+        var allDiacs = ["āēīōūǖ", "áéíóúǘ", "ǎěǐǒǔǚ", "àèìòùǜ", "aeiouür"];
+        for (var i = 0; i < allDiacs.length; i++) {
+            if (allDiacs[i].includes(diac)) {
+                return i + 1;
+            }
         }
-      }
-      return 0;
+        return 0;
     }
     var a = "([aāáǎà])";
     var e = "([eēéěè])";
@@ -119,120 +116,65 @@
     const re = new RegExp(regex, "g");
     const matches = pinyin.matchAll(re);
     var tones = Array.from(matches).map(function (match) {
-      var m = match;
-      m.shift();
-      var diac = m.filter(function (v) {
-        return v !== undefined;
-      });
-      if (diac.length > 0) {
-        if (diac.length > 1 && "12345".includes(diac[1])) {
-          return parseInt(diac[1]); // tone as pinyin number
+        var m = match;
+        m.shift();
+        var diac = m.filter(function (v) {
+            return v !== undefined;
+        });
+        if (diac.length > 0) {
+            if (diac.length > 1 && "12345".includes(diac[1])) {
+                return parseInt(diac[1]); // tone as pinyin number
+            } else {
+                return getToneNumber(diac[0]); // tone as pinyin diacritic
+            }
         } else {
-          return getToneNumber(diac[0]); // tone as pinyin diacritic
+            return 0;
         }
-      } else {
-        return 0;
-      }
     });
     return tones;
-  }
+}
 
-  function toneToColor(tone) {
+export function toneToColor(tone) {
     switch (tone) {
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        return dconfig.pinyin[`tone${tone}`];
-      default:
-        console.error("Invalid tone: " + tone);
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            return Config.dconfig.pinyin[`tone${tone}`];
+        default:
+            console.error("Invalid tone: " + tone);
     }
-  }
+}
 
-  function colorPinyin(pinyinElement, pinyin) {
+export function colorPinyin(pinyinElement, pinyin) {
     var res = "";
     var rest = pinyin;
-    for (const syllable of separatePinyinInSyllables(pinyin, false)) {
-      const tone = getTones(syllable);
-      var coloredSyllable = "";
-      if (tone.length === 0) {
-        coloredSyllable = syllable;
-      } else {
-        const color = toneToColor(tone[0]);
-        coloredSyllable = `<span style="color:${color}">${syllable}</span>`;
-      }
+    for (const syllable of SepPinyin.separatePinyinInSyllables(pinyin, false)) {
+        const tone = getTones(syllable);
+        var coloredSyllable = "";
+        if (tone.length === 0) {
+            coloredSyllable = syllable;
+        } else {
+            const color = toneToColor(tone[0]);
+            coloredSyllable = `<span style="color:${color}">${syllable}</span>`;
+        }
 
-      const pos = rest.search(syllable);
-      if (pos === -1) {
-        throw new Error(`Syllable ${syllable} not found in pinyin ${rest}: `);
-      }
-      const curr = rest.slice(0, pos + syllable.length);
-      rest = rest.slice(pos + syllable.length);
-      res += curr.replace(syllable, coloredSyllable);
+        const pos = rest.search(syllable);
+        if (pos === -1) {
+            throw new Error(
+                `Syllable ${syllable} not found in pinyin ${rest}: `,
+            );
+        }
+        const curr = rest.slice(0, pos + syllable.length);
+        rest = rest.slice(pos + syllable.length);
+        res += curr.replace(syllable, coloredSyllable);
     }
 
     pinyinElement.innerHTML = res;
-  }
+}
 
-  function colorPinyinElement(pinyin) {
-    var pinyinElement = document.getElementById("pinyin");
-    colorPinyin(pinyinElement, pinyin);
-  }
-  function colorPinyinSentenceElement(pinyin) {
+export function colorPinyinSentenceElement(pinyin) {
     var pinyinElement = document.getElementById("exampleSentencePinyin");
     colorPinyin(pinyinElement, pinyin);
-  }
-
-  async function hanziCharsFrom(chinese) {
-    const hanziChars = [];
-    for (const c of Array.from(chinese)) {
-      const b = await hanziCharExistsP(c);
-      if (b) {
-        hanziChars.push(c);
-      }
-    }
-    return hanziChars;
-  }
-
-  async function initializeCharsTarget(chinese, pinyin, colorp) {
-    const charsTarget = document.getElementById("characters-target-div");
-
-    let tones = getTones(pinyin);
-    const onlyHanzi = await hanziCharsFrom(chinese);
-    const tonesWrong = tones.length !== onlyHanzi.length;
-    if (tonesWrong) {
-      console.error(
-        "Tones array is shorter than characters: " +
-          tones.length +
-          " vs " +
-          onlyHanzi.length,
-      );
-    }
-    for (const c of chinese) {
-      const charTarget = document.createElement("div");
-      charsTarget.appendChild(charTarget);
-      charTarget.style.display = "inline";
-      const b = await hanziCharExistsP(c);
-      if (b) {
-        if (!tonesWrong && colorp) {
-          var strokeColor = toneToColor(tones.shift());
-        } else {
-          var strokeColor = "#555";
-        }
-        const writer = HanziWriter.create(charTarget, c, {
-          width: 100,
-          height: 100,
-          padding: 5,
-          strokeColor: strokeColor,
-          radicalColor: "#168F16", // green
-        });
-      } else {
-        charTarget.innerHTML = c;
-        charTarget.style.fontFamily = "Source Han Serif, SimSun";
-        charTarget.style.fontSize = "80px";
-        charTarget.style.verticalAlign = "20px";
-      }
-    }
-  }
-</script>
+}

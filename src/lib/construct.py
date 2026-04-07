@@ -9,7 +9,7 @@ import shutil
 import glob
 import json
 import lib.common as cm
-from lib.pinyin import cached_to_pinyin_gpt, cached_to_pinyin_check, color_pinyin
+from lib.pinyin import cached_to_pinyin_gpt, cached_to_pinyin_check
 from lib.exampleSentences import createExampleSentences
 from lib.config import Config
 from lib.model import generate_model

@@ -10,14 +10,10 @@ modelCSS = """
     background-color: white;
 }
 
-.mobile .quizButton {
-    border-radius: 50%;
-    width: 3em;
-    height: 3em;
-
-    margin: 1em 0.5em;
-    font-family: "Sans Serif", sans-serif;
-    outline: none !important;
+.chinese {
+    font-family: Source Han Sans, SimSun;
+    font-size: 80px;
+    vertical-align: 20px;
 }
 """
 
@@ -28,7 +24,7 @@ def generate_model(config, mediaColl):
     return ga.Model(
         model_id=config.get("modelId"),
         name=config.get("modelName"),
-        css=modelCSS,
+        css=modelCSS + "\n" + templates.getTemplateCSS(),
         fields=[
             {"name": "ID", "excludeFromSearch": False},
             {"name": "Chinese", "excludeFromSearch": False},

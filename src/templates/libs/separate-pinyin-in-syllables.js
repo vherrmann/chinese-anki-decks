@@ -1,6 +1,6 @@
 // from https://github.com/Connum/pinyin/blob/master/shared/helpers/separate-pinyin-in-syllables.js
 
-function separatePinyinInSyllables(pinyin, separateBySpaces) {
+export function separatePinyinInSyllables(pinyin, separateBySpaces) {
   if (!pinyin) {
     return [];
   }
